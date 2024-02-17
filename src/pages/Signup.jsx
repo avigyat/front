@@ -1,21 +1,28 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 const Signup = (props) => {
+  
   let navigate = useNavigate();
   const host = "http://localhost:4000/";
   const [passwordDetails, setpasswordDetails] = useState({ email: "", password: "", name: "" ,location:"", confirm_password:""})
   const onChange = (e) => {
     setpasswordDetails({ ...passwordDetails, [e.target.name]: e.target.value })
   }
+  useEffect(() => {
+    if(localStorage.getItem('chat-app-user')) navigate('/')
+  
+  
+  }, [])
   const handleSubmit = async (e) => {
     e.preventDefault();//synthetic event
-    const name = passwordDetails.name;
+    const username = passwordDetails.name;
     const email = passwordDetails.email;
     const password = passwordDetails.password;
-    const location = passwordDetails.location;
+    
     const confirm_password = passwordDetails.confirm_password;
+    console.log(username)
     if (password === confirm_password){
     const response = await fetch(`${host}api/createUser`, {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
@@ -23,25 +30,25 @@ const Signup = (props) => {
       headers: {
         "Content-Type": "application/json"
 
-      }, body: JSON.stringify({ name, email, password , location })
+      }, body: JSON.stringify({ username, email, password  })
     });
-    const json = await response.json()
-    console.log(json);
-    if (json.success==='true' ||json.success===true ) {
+    const data = await response.json()
+    console.log(data);
+    if (data.status===true ) {
       //saving auth token in local storage and redirect
 
 
       navigate('/login')
-      console.log(json)
+      localStorage.setItem('chat-app-user', JSON.stringify(data))
     } else {
-      navigate('/signup')
-      alert("Enter valid credentials")
+      navigate('/register')
+      alert(data.msg)
     }
   }else {  alert("Password does not match") }
 }
 
-  return (
-    <div className='h-full  bg-gradient-to-b from-black via-gray-800 to to-gray-700 p-8'>
+  return (<>
+   <div className='h-full  bg-gradient-to-b from-black via-gray-800 to to-gray-700 p-8'>
       <form className='mx-8' >
         <div className="bg-grey-lighter min-h-screen flex flex-col">
           <div className="container max-w-sm mx-auto flex-1 flex flex-col items-center justify-center px-2">
@@ -70,19 +77,15 @@ const Signup = (props) => {
                 name="confirm_password" onChange={onChange} value={passwordDetails.confirm_password} required
                 placeholder="Confirm Password" />
 
-              <input
-                type="location"
-                className="block border border-grey-light w-full p-3 rounded mb-4"
-                name="location" onChange={onChange} value={passwordDetails.location}
-                placeholder="location" />
+              
 
               <button
-                type="button" onClick={handleSubmit}
-                className="w-full bg-primary-700 text-center py-3 rounded btn-primary hover:bg-green-dark focus:outline-none my-1"
+                 onClick={handleSubmit}
+                className="w-full btn-primary  text-center py-3 rounded btn-primary hover:bg-green-dark focus:outline-none my-1"
               >Create Account</button>
             </div>
 
-            <div className="text-white mt-6">
+            <div className="text-primary mt-6">
               Already have an account?
               <Link className="no-underline border-b border-blue text-white" to="/login">
                 Log in
@@ -92,6 +95,8 @@ const Signup = (props) => {
         </div>
       </form>
     </div>
+    </>
+   
   )
 }
 
